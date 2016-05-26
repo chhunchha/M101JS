@@ -43,12 +43,12 @@ app.post('/save_movie', function(req, res, next){
     var imdb = req.body.imdb;
     console.log("Got movie details %s %s %s", title, year, imdb);
     //res.redirect('/');
-    var movie = { title: title, year: year, imdb: imdb};
-    movies_collection.save(movie, {w: 1}, function(err, records){
+    var movie = { 'title': title, 'year': year, 'imdb': imdb};
+    movies_collection.insertOne(movie, function(err, records){
         if(err) {
             var message = "Fail to save movie";
         } else {
-            var message = "Movie saved."    
+            var message = "Movie saved.";  
         }
         render_movies(req, res, next, message);
     });
