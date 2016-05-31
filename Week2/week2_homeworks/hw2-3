@@ -1,0 +1,48 @@
+How many movies list "Sweden" second in the the list of countries.
+
+> db.movieDetails.find({"countries.1": "Sweden"},{title: 1, countries: 1, _id: 0}).pretty();
+{
+	"title" : "The Girl with the Dragon Tattoo",
+	"countries" : [
+		"USA",
+		"Sweden",
+		"Norway"
+	]
+}
+{ "title" : "Dallas: J.R. Returns", "countries" : [ "USA", "Sweden" ] }
+{
+	"title" : "If I Want to Whistle, I Whistle",
+	"countries" : [
+		"Romania",
+		"Sweden",
+		"Germany"
+	]
+}
+{
+	"title" : "Burma VJ: Reporter i et lukket land",
+	"countries" : [
+		"Denmark",
+		"Sweden",
+		"Norway",
+		"UK",
+		"USA",
+		"Germany",
+		"Netherlands",
+		"Israel",
+		"Spain",
+		"Belgium",
+		"Canada"
+	]
+}
+{ "title" : "Hin helgu vé", "countries" : [ "Iceland", "Sweden" ] }
+{
+	"title" : "Au Hasard Balthazar",
+	"countries" : [
+		"France",
+		"Sweden"
+	]
+}
+> db.movieDetails.find({"countries.1": "Sweden"},{title: 1, countries: 1, _id: 0}).count();
+6
+> db.movieDetails.find({"countries.1": "Sweden"}).count();
+6

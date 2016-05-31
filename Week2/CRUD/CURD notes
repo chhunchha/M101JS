@@ -1,0 +1,278 @@
+##################
+### Insert
+##################
+
+db.movies.insertOne(
+    {
+        "name: "Name value"
+    }
+)
+
+db.movies.insertOne(
+    {
+        "_id": "tt1",
+        "name: "Name value"
+    }
+)
+
+db.movies.insertMany(
+    [
+        {
+            "_id": "tt1",
+            "name: "Name value"
+        },
+        {
+            "_id": "tt2",
+            "name: "Name value"
+        }
+    ],
+    {
+        // for avoiding break on some error
+        // for example we had record with same _id the it would break and 
+        // other records wont get inserted as it would have been ordered insert
+        "ordered" : false
+    }
+)
+
+##################
+### _id field
+##################
+
+12 byte hax string of type ObjectId
+
+objectId: Date (4 Bytes) | Mac ADDR  (4 Bytes) | PID (2 Bytes) | COUNTER (4 Bytes)
+
+##################
+### Read
+##################
+
+db.movieDetails.find({ rated: "PG-13" }).pretty();
+
+db.movieDetails.find({ rated: "PG-13" }).count();
+
+//default it is and condition
+db.movieDetails.find({ rated: "PG-13", year: 2009 }).count();
+
+db.movieDetails.find({ "tomato.meter": 100 }).pretty();
+
+//exact match of array for writers - order of elements in array matters
+db.movieDetails.find({ "writers" : ["Ethan Coen", "Joel Coen"] }).pretty();
+
+//this will look for actor in as any one element in array.
+db.movieDetails.find({ "actors" : "Jeff Bridges" }).pretty();
+
+//match specific position in array, like at 0 position in array matching with given value 
+db.movieDetails.find({ "actors.0" : "Jeff Bridges" }).preety();
+
+
+##################
+## Cursors
+##################
+
+find operation returns cursor
+which has first batch of 101 results default, which could be changed
+
+method can be used to find how many records are there in cursor current batch
+c.objsLeftInBatch();
+
+c.next() get next batch of records
+
+##################
+## Projections
+##################
+
+limit the amout of data returned by mango db
+
+for example below will have only id and title attribute returned, 
+by default id field is always there
+db.movie.find({ "rated": "PG" }, { "title": 1 }).preety()
+
+exclude id - have to specify
+db.movie.find({ "rated": "PG" }, { _id: 0, "title": 1 }).preety()
+
+everything else will be included in below case other than what is excluded
+db.movie.find({ "rated": "PG" }, { _id: 0, "actors": 0 }).preety()
+
+
+####################
+### Operators
+####################
+
+$eq - matches values that are equal to a specified value
+
+
+$gt - great than
+// movies run time greater than 90
+db.movie.find({ runtime: { $gt: 90} }).preety();
+
+// greater and equal to 90 and less and equal to 120
+db.movie.find({ runtime: { $gte: 90, $lte: 120} }).preety();
+
+db.movie.find({ "tomato.meter": { $gte: 95 }, runtime: { $gt: 180 }},
+{ title: 1, runtime: 1, _id: 0}).preety();
+
+$ne - not equal to
+
+below query will also return movie where there is no rated field 
+and also rated with not equal to "UNRATED"
+db.movie.find({ rated: { $ne: "UNRATED} }, { title: 1, rated: 1, _id: 0}).preety();
+
+db.movie.find({ rated: {$in : ["G", "PG", "PG-13"]}}.preety();
+
+$exists - matches documents that have the specified field
+db.movie.find({ "tomato.meter": {$exists: true} }).preety()
+
+//movies where tomato meter data doesn't exists
+db.movie.find({ "tomato.meter": {$exists: false} }).preety()
+
+
+$type - selects documents if a field is of the specified type
+db.movie.find({ "_id": { $type: "string" }}).preety()
+
+
+$or
+db.movie.find({
+    $or: [
+        { "tomato.meter" : {$gt: 95} },
+        { "metacritic" : {$gt: 88} }
+    ]
+}).preety();
+
+$and
+db.movie.find({
+    $and: [
+        { "tomato.meter" : {$gt: 95} },
+        { "metacritic" : {$gt: 88} }
+    ]
+}).preety();
+
+// is equivalent to above but sometimes we need $and operator
+db.movie.find({
+         "tomato.meter" : {$gt: 95} ,
+         "metacritic" : {$gt: 88} 
+}).preety();
+
+
+// If I were to write two conditions for same key then $and is useful
+db.movie.find({
+    $and : [ 
+        {"metacritic" : { $ne: null }},
+        {"metacritic" : { $exists: true }},    
+    ]
+}).preety();
+
+
+//Regex operator
+db.movie.find( { "awards.text": { $regex: /^Won\s.*/ } }).preety()
+
+
+//Array operator
+
+$all - arrays that contain all elements specifid in query
+db.movie.find({ geners: ["comedy", "crime"]}).preety();
+
+$size - where countries array is onlye size of 1
+db.movie.find({countries: { $size: 1}}).preety();
+
+$eleMatch 
+
+for example we have data of revenue like below for each movie
+
+boxOffice: [
+    { "country" : "USA" , "revenue": 41.3 },
+    { "country" : "UK" , "revenue": 10.3 }
+]
+
+//below query will get movie with boxoffice which has UK and 
+//reveneue in any country greater than 15, 
+//not necessary UK because match is happening for boxoffice
+
+db.movie.find({ boxOffice: { country: "UK", revnue: {$gt: 15 }}}).preety();
+
+//above solved by elemMatch
+db.movie.find( {boxOffice: { 
+$eleMatch: { country: "UK", revenue: { $gt: 15 } } }).preety();
+
+
+##################
+### Update / Upserts
+##################
+
+//updateOne
+db.movie.updateOne(
+{ "title": "The Martian"},
+{$set: {"poster": "http:///"}}
+);
+
+if criteria returns multiple document then  only first document will be updated.
+
+$set - it will add or update attribute specified
+
+$unset - Removes the specified field 
+db.movie.updateMany(
+    {rated:null},
+    {$unset: { rated: ""}}
+);
+
+$inc - increment value of field
+
+db.movie.updateOne(
+    {title: "The Martian"},
+    { $inc: { "tomato.reviews" : 3, "tomato.userReviews": 25}}
+).preety();
+
+
+// many for array operators
+$pop
+
+$addToSet
+
+$push
+
+//$each says will add each item not whole reviews object
+db.movie.updateOne(
+    { title: "The Martian"},
+    { 
+        $push: 
+        { 
+            reviews: 
+            { 
+               $each: [{ rating: 4.5,
+                reviewr: "Sumant",
+                text: "asdsad ads asdasd"
+                }] , $position:0, $slice: 5  
+            }
+         }
+      }
+);
+
+$slice will says keep only 5.
+$position puts the review on top, otherwise it will be pushed at end 
+and slice will remove it if there are more than 5
+
+//updateMany
+update many works as above just changing all the records matching criteria 
+rather than only first one
+
+UpdateReplace
+
+
+
+#################
+### UPSERTS 
+#################
+
+insert for update if record doesn't exits
+
+db.movieDetails.updateOne (
+    {"imdb.id": details.imdb.id},
+    {$set: details},
+    {upset: true}
+);
+
+
+/// replaceOne
+db.movies.replaceOne({"imdb": detail.imdb.id}, detail);
+
+
+// unset

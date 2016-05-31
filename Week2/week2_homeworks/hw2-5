@@ -1,0 +1,29 @@
+As a follow up to the previous question, how many documents in 
+the video.movieDetails collection list both "Comedy" and "Crime" 
+as genres regardless of how many other genres are listed?
+
+
+> db.movieDetails.find({$and: [{genres:"Comedy"},{genres:"Crime"}]},{ genres: 1, _id: 0}).pretty();
+{ "genres" : [ "Biography", "Comedy", "Crime" ] }
+{ "genres" : [ "Comedy", "Crime", "Mystery" ] }
+{ "genres" : [ "Comedy", "Crime" ] }
+{ "genres" : [ "Comedy", "Crime" ] }
+{ "genres" : [ "Comedy", "Crime" ] }
+{ "genres" : [ "Comedy", "Crime", "Romance" ] }
+{ "genres" : [ "Comedy", "Crime", "Drama" ] }
+{ "genres" : [ "Comedy", "Crime", "Mystery" ] }
+{ "genres" : [ "Comedy", "Crime", "Thriller" ] }
+{ "genres" : [ "Comedy", "Crime" ] }
+{ "genres" : [ "Action", "Comedy", "Crime" ] }
+{ "genres" : [ "Comedy", "Crime", "Romance" ] }
+{ "genres" : [ "Comedy", "Action", "Crime" ] }
+{ "genres" : [ "Action", "Comedy", "Crime" ] }
+{ "genres" : [ "Action", "Comedy", "Crime" ] }
+{ "genres" : [ "Comedy", "Crime" ] }
+{ "genres" : [ "Adventure", "Comedy", "Crime" ] }
+{ "genres" : [ "Comedy", "Crime" ] }
+{ "genres" : [ "Comedy", "Crime", "Mystery" ] }
+{ "genres" : [ "Action", "Comedy", "Crime" ] }
+Type "it" for more
+> db.movieDetails.find({$and: [{genres:"Comedy"},{genres:"Crime"}]},{ genres: 1, _id: 0}).count();
+56
